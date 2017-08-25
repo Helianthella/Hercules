@@ -3364,11 +3364,13 @@ Return true if successful, otherwise it will return false.
 
 ---------------------------------------
 
-*getgroupid()
+*getgroupid({<GID>})
 
 This function will return the id of player group the account to which the 
 invoking player belongs.
 
+If <GID> is passed, it will return the value of the specified Player instead of
+the attached Player. If the Player is not found, it will return -1.
 ---------------------------------------
 
 *gettimetick(<type>)

@@ -6487,7 +6487,6 @@ Examples:
 *unitwarp(<GID>, <Mapname>, <x>, <y>)
 *unitattack(<GID>, <Target ID>)
 *unitstop(<GID>)
-*unittalk(<GID>, <Text>)
 *unitemote(<GID>, <Emote>)
 
 Okay, these commands should be fairly self explaining.
@@ -6498,6 +6497,22 @@ monsters:
 
 OnTouchNPC:
 	unitwarp(0, "this", -1, -1);
+
+---------------------------------------
+
+*unittalk(<GID>, <Text>{, <show name>{, <send target>{, <account id>}}})
+
+This command makes a unit talk publicly. If <show name> is true (default), the
+name of the unit is sent along with the message; if false, only the message is
+sent.
+
+<send target> can be one of the following:
+
+AREA_CHAT_WOC - normal chat area (default)
+SELF - only the specified player
+
+When SELF is used, the message will only be visible to the attached player or
+the passed <account id>.
 
 ---------------------------------------
 

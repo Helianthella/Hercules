@@ -12769,14 +12769,14 @@ void HP_clif_messagecolor(struct block_list *bl, uint32 color, const char *msg) 
 	}
 	return;
 }
-void HP_clif_disp_overhead(struct block_list *bl, const char *mes) {
+void HP_clif_disp_overhead(struct block_list *bl, const char *mes, enum send_target target, struct map_session_data *sd) {
 	int hIndex = 0;
 	if (HPMHooks.count.HP_clif_disp_overhead_pre > 0) {
-		void (*preHookFunc) (struct block_list **bl, const char **mes);
+		void (*preHookFunc) (struct block_list **bl, const char **mes, enum send_target *target, struct map_session_data **sd);
 		*HPMforce_return = false;
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_clif_disp_overhead_pre; hIndex++) {
 			preHookFunc = HPMHooks.list.HP_clif_disp_overhead_pre[hIndex].func;
-			preHookFunc(&bl, &mes);
+			preHookFunc(&bl, &mes, &target, &sd);
 		}
 		if (*HPMforce_return) {
 			*HPMforce_return = false;
@@ -12784,13 +12784,13 @@ void HP_clif_disp_overhead(struct block_list *bl, const char *mes) {
 		}
 	}
 	{
-		HPMHooks.source.clif.disp_overhead(bl, mes);
+		HPMHooks.source.clif.disp_overhead(bl, mes, target, sd);
 	}
 	if (HPMHooks.count.HP_clif_disp_overhead_post > 0) {
-		void (*postHookFunc) (struct block_list *bl, const char *mes);
+		void (*postHookFunc) (struct block_list *bl, const char *mes, enum send_target target, struct map_session_data *sd);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_clif_disp_overhead_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_clif_disp_overhead_post[hIndex].func;
-			postHookFunc(bl, mes);
+			postHookFunc(bl, mes, target, sd);
 		}
 	}
 	return;

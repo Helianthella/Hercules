@@ -15360,7 +15360,7 @@ BUILDIN(npctalk)
 		safestrncpy(name, nd->name, sizeof(name));
 		strtok(name, "#"); // discard extra name identifier if present
 		safesnprintf(message, sizeof(message), "%s : %s", name, str);
-		clif->disp_overhead(&nd->bl, message);
+		clif->disp_overhead(&nd->bl, message, AREA_CHAT_WOC, NULL);
 	}
 
 	return true;
@@ -19739,26 +19739,42 @@ BUILDIN(unitstop) {
 ///
 /// unittalk <unit_id>,"<message>";
 BUILDIN(unittalk) {
-	int unit_id;
-	const char* message;
-	struct block_list* bl;
+	struct block_list *bl = map->id2bl(script_getnum(st, 2));
+	const char *message = script_getstr(st, 3);
+	bool show_name = true;
+	enum send_target target = AREA_CHAT_WOC;
+	struct map_session_data *sd = NULL;
+	char final[256];
 
-	unit_id = script_getnum(st,2);
-	message = script_getstr(st, 3);
-
-	bl = map->id2bl(unit_id);
-	if( bl != NULL ) {
-		struct StringBuf sbuf;
-		char blname[NAME_LENGTH];
-		StrBuf->Init(&sbuf);
-		safestrncpy(blname, clif->get_bl_name(bl), sizeof(blname));
-		if(bl->type == BL_NPC)
-			strtok(blname, "#");
-		StrBuf->Printf(&sbuf, "%s : %s", blname, message);
-		clif->disp_overhead(bl, StrBuf->Value(&sbuf));
-		StrBuf->Destroy(&sbuf);
+	if (bl == NULL) {
+		ShowWarning("script:unittalk: unit not found.\n");
+		script_pushint(st, -1);
+		return true;
 	}
 
+	if (script_hasdata(st, 4)) {
+		show_name = script_getnum(st, 4);
+	}
+	if (script_hasdata(st, 5)) {
+		target = script_getnum(st, 5);
+	}
+
+	if (script_hasdata(st, 6)) {
+		sd = map->id2sd(script_getnum(st, 6));
+	} else if (st->rid > 0) {
+		sd = map->id2sd(st->rid);
+	}
+
+	if (show_name) {
+		char name[NAME_LENGTH];
+		safestrncpy(name, clif->get_bl_name(bl), sizeof(name));
+		strtok(name, "#");
+		safesnprintf(final, sizeof(final), "%s : %s", name, message);
+	} else {
+		safestrncpy(final, message, sizeof(message));
+	}
+
+	clif->disp_overhead(bl, final, target, sd);
 	return true;
 }
 
@@ -24136,7 +24152,7 @@ void script_parse_builtin(void) {
 		BUILDIN_DEF(unitwarp,"isii"),
 		BUILDIN_DEF(unitattack,"iv?"),
 		BUILDIN_DEF(unitstop,"i"),
-		BUILDIN_DEF(unittalk,"is"),
+		BUILDIN_DEF(unittalk,"is???"),
 		BUILDIN_DEF(unitemote,"ii"),
 		BUILDIN_DEF(unitskilluseid,"ivi?"), // originally by Qamera [Celest]
 		BUILDIN_DEF(unitskillusepos,"iviii"), // [Celest]

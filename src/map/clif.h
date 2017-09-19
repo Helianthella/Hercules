@@ -870,7 +870,7 @@ struct clif_interface {
 	void (*broadcast2) (struct block_list *bl, const char *mes, int len, unsigned int fontColor, short fontType, short fontSize, short fontAlign, short fontY, enum send_target target);
 	void (*messagecolor_self) (int fd, uint32 color, const char *msg);
 	void (*messagecolor) (struct block_list* bl, uint32 color, const char* msg);
-	void (*disp_overhead) (struct block_list *bl, const char* mes);
+	void (*disp_overhead) (struct block_list *bl, const char *mes, enum send_target target, struct map_session_data *sd);
 	void (*msgtable) (struct map_session_data* sd, unsigned short msg_id);
 	void (*msgtable_num) (struct map_session_data *sd, unsigned short msg_id, int value);
 	void (*msgtable_skill) (struct map_session_data *sd, uint16 skill_id, int msg_id);

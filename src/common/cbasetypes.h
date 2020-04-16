@@ -67,6 +67,9 @@
 #define __ARM_ARCH_VERSION__ 6
 #elif defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7S__) // gcc ARMv7
 #define __ARM_ARCH_VERSION__ 7
+#elif defined(__ARM_ARCH_8A__) || defined(__ARM_ARCH_8R__) || defined(__ARM_ARCH_8M_BASE__) \
+	|| defined(__ARM_ARCH_8M_MAIN__) // gcc ARMv8
+#define __ARM_ARCH_VERSION__ 8
 #elif defined(_M_ARM) // MSVC
 #define __ARM_ARCH_VERSION__ _M_ARM
 #else

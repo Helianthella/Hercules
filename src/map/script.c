@@ -23862,23 +23862,32 @@ static BUILDIN(getcharip)
 	return true;
 }
 
+/** possible types of script commands */
 enum function_type {
+	/** not found */
 	FUNCTION_IS_NONE = 0,
+	/** script buildin */
 	FUNCTION_IS_COMMAND,
+	/** global user-defined function (for use with callfunc) */
 	FUNCTION_IS_GLOBAL,
+	/** user-defined function local to the NPC */
 	FUNCTION_IS_LOCAL,
+	/** user-defined label (for use with callsub) */
 	FUNCTION_IS_LABEL,
+	/** user-defined function local to the NPC, marked as public */
+	FUNCTION_IS_PUBLIC,
 };
 
 /**
- * is_function(<function name>)
- **/
+ * is_function("<function name>"{, <npc id>})
+ * is_function("<function name>"{, "<npc name>"})
+ *
+ * checks the type of a script command
+ */
 static BUILDIN(is_function)
 {
 	const char *str = script_getstr(st, 2);
 	enum function_type type = FUNCTION_IS_NONE;
-
-	// TODO: add support for exported functions (#2142)
 
 	if (strdb_exists(script->userfunc_db, str)) {
 		type = FUNCTION_IS_GLOBAL;
@@ -23902,6 +23911,45 @@ static BUILDIN(is_function)
 					// WTF... ?
 					// for some reason local functions can have type C_NAME
 					type = FUNCTION_IS_LOCAL;
+				}
+			}
+
+			if (type == FUNCTION_IS_LOCAL) {
+				// find its label flags to see if it's public
+				for (int i = 0; i < script->label_count; i++) {
+					if (script->labels[i].key == n) {
+						if ((script->labels[i].flags & LABEL_IS_EXTERN) != 0) {
+							type = FUNCTION_IS_PUBLIC;
+						}
+						break;
+					}
+				}
+			}
+		} else if (script_hasdata(st, 3)) {
+			struct npc_data *nd = NULL;
+
+			if (script_isint(st, 3)) {
+				nd = map->id2nd(script_getnum(st, 2));
+			} else if (script_isstring(st, 3)) {
+				nd = npc->name2id(script_getstr(st, 2));
+			}
+
+			if (nd != NULL) {
+				// try to find the label
+
+				for (int i = 0; i < nd->u.scr.label_list_num; ++i) {
+					if (strcmp(nd->u.scr.label_list[i].name, str) == 0) {
+						if ((nd->u.scr.label_list[i].flags & LABEL_IS_USERFUNC) != 0) {
+							if ((nd->u.scr.label_list[i].flags & LABEL_IS_EXTERN) != 0) {
+								type = FUNCTION_IS_PUBLIC;
+							} else {
+								type = FUNCTION_IS_LOCAL;
+							}
+						} else {
+							type = FUNCTION_IS_LABEL;
+						}
+						break;
+					}
 				}
 			}
 		}
@@ -27517,7 +27565,7 @@ static void script_parse_builtin(void)
 		 **/
 		BUILDIN_DEF(getargcount,""),
 		BUILDIN_DEF(getcharip,"?"),
-		BUILDIN_DEF(is_function,"s"),
+		BUILDIN_DEF(is_function,"s?"),
 		BUILDIN_DEF(freeloop,"i"),
 		BUILDIN_DEF(getrandgroupitem,"ii"),
 		BUILDIN_DEF(cleanmap,"s"),
@@ -28137,6 +28185,7 @@ static void script_hardcoded_constants(void)
 	script->set_constant("FUNCTION_IS_GLOBAL", FUNCTION_IS_GLOBAL, false, false);
 	script->set_constant("FUNCTION_IS_LOCAL", FUNCTION_IS_LOCAL, false, false);
 	script->set_constant("FUNCTION_IS_LABEL", FUNCTION_IS_LABEL, false, false);
+	script->set_constant("FUNCTION_IS_PUBLIC", FUNCTION_IS_PUBLIC, false, false);
 
 	script->constdb_comment("item trade restrictions");
 	script->set_constant("ITR_NONE", ITR_NONE, false, false);

@@ -25662,6 +25662,35 @@ static BUILDIN(showscript)
 	return true;
 }
 
+/**
+ * gets the subtype of a NPC
+ *
+ * @param 0? - the name or ID of the target NPC
+ * @return the subtype (enum npc_subtype)
+ */
+static BUILDIN(getnpcsubtype)
+{
+    struct npc_data *nd = NULL;
+
+    if (script_hasdata(st, 2)) {
+        if (script_isstringtype(st, 2)) {
+            nd = npc->name2id(script_getstr(st, 2));
+        } else {
+            nd = map->id2nd(script_getnum(st, 2));
+        }
+    } else {
+        nd = map->id2nd(st->oid);
+    }
+
+    if (nd == NULL) {
+        script_pushint(st, 0);
+    } else {
+        script_pushint(st, nd->subtype);
+    }
+
+    return true;
+}
+
 static BUILDIN(mergeitem)
 {
 	struct map_session_data *sd = script->rid2sd(st);
@@ -26873,6 +26902,7 @@ static void script_parse_builtin(void)
 		BUILDIN_DEF(setparam,"ii?"),
 		BUILDIN_DEF(getcharid,"i?"),
 		BUILDIN_DEF(getnpcid, "?"),
+        BUILDIN_DEF(getnpcsubtype, "?"),
 		BUILDIN_DEF(getpartyname,"i"),
 		BUILDIN_DEF(getpartymember,"i?"),
 		BUILDIN_DEF(getpartyleader,"i?"),
@@ -28062,6 +28092,13 @@ static void script_hardcoded_constants(void)
 	script->set_constant("IBT_GUILD", IBT_GUILD, false, false);
 	script->set_constant("IBT_PARTY", IBT_PARTY, false, false);
 	script->set_constant("IBT_CHARACTER", IBT_CHARACTER, false, false);
+
+    script->constdb_comment("NPC subtypes");
+	script->set_constant("NPCSUBTYPE_WARP", WARP, false, false);
+    script->set_constant("NPCSUBTYPE_SHOP", SHOP, false, false);
+    script->set_constant("NPCSUBTYPE_SCRIPT", SCRIPT, false, false);
+    script->set_constant("NPCSUBTYPE_CASHSHOP", CASHSHOP, false, false);
+    script->set_constant("NPCSUBTYPE_TOMB", TOMB, false, false);
 
 	script->constdb_comment("Renewal");
 #ifdef RENEWAL
